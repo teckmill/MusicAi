@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,23 +8,27 @@ import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Music2, Mail, Lock } from 'lucide-react';
+import { useAuth } from '@/contexts/auth-context';
 
 export default function LoginPage() {
-  const router = useRouter();
+  const { login } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      // TODO: Implement actual authentication
+      await login(formData.email, formData.password);
       toast({
         title: "Success!",
         description: "You've successfully logged in.",
       });
-      router.push('/discover');
     } catch (error) {
       toast({
         variant: "destructive",
@@ -35,6 +38,13 @@ export default function LoginPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.id]: e.target.value
+    }));
   };
 
   return (
@@ -66,6 +76,8 @@ export default function LoginPage() {
                 type="email"
                 placeholder="name@example.com"
                 required
+                value={formData.email}
+                onChange={handleChange}
                 className="pl-9"
               />
             </div>
@@ -80,6 +92,8 @@ export default function LoginPage() {
                 type="password"
                 placeholder="••••••••"
                 required
+                value={formData.password}
+                onChange={handleChange}
                 className="pl-9"
               />
             </div>

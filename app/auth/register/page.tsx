@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,32 +8,44 @@ import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Music2, User, Mail, Lock } from 'lucide-react';
+import { useAuth } from '@/contexts/auth-context';
 
 export default function RegisterPage() {
-  const router = useRouter();
+  const { register } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+  });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      // TODO: Implement actual registration
+      await register(formData.name, formData.email, formData.password);
       toast({
         title: "Success!",
         description: "Your account has been created.",
       });
-      router.push('/auth/login');
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Something went wrong. Please try again.",
+        description: "Registration failed. Please try again.",
       });
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.id]: e.target.value
+    }));
   };
 
   return (
@@ -65,6 +76,8 @@ export default function RegisterPage() {
                 id="name"
                 placeholder="John Doe"
                 required
+                value={formData.name}
+                onChange={handleChange}
                 className="pl-9"
               />
             </div>
@@ -79,6 +92,8 @@ export default function RegisterPage() {
                 type="email"
                 placeholder="name@example.com"
                 required
+                value={formData.email}
+                onChange={handleChange}
                 className="pl-9"
               />
             </div>
@@ -93,6 +108,8 @@ export default function RegisterPage() {
                 type="password"
                 placeholder="••••••••"
                 required
+                value={formData.password}
+                onChange={handleChange}
                 className="pl-9"
               />
             </div>

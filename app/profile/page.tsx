@@ -8,17 +8,23 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { User, Mail, Camera, Music2 } from 'lucide-react';
+import { useAuth } from '@/contexts/auth-context';
 
 export default function ProfilePage() {
+  const { user, updateProfile } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: user?.name || '',
+    email: user?.email || '',
+  });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      // TODO: Implement profile update
+      await updateProfile(formData);
       toast({
         title: "Success!",
         description: "Your profile has been updated.",
@@ -33,6 +39,17 @@ export default function ProfilePage() {
       setIsLoading(false);
     }
   };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.id]: e.target.value
+    }));
+  };
+
+  if (!user) {
+    return null; // Or a loading state
+  }
 
   return (
     <main className="min-h-screen relative">
@@ -57,8 +74,10 @@ export default function ProfilePage() {
               </Button>
             </div>
             <div>
-              <h1 className="text-3xl font-bold">John Doe</h1>
-              <p className="text-muted-foreground">Member since January 2024</p>
+              <h1 className="text-3xl font-bold">{user.name}</h1>
+              <p className="text-muted-foreground">
+                Member since {new Date(user.createdAt).toLocaleDateString()}
+              </p>
             </div>
           </div>
 
@@ -70,7 +89,8 @@ export default function ProfilePage() {
                   <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="name"
-                    defaultValue="John Doe"
+                    value={formData.name}
+                    onChange={handleChange}
                     className="pl-9"
                   />
                 </div>
@@ -83,7 +103,8 @@ export default function ProfilePage() {
                   <Input
                     id="email"
                     type="email"
-                    defaultValue="john@example.com"
+                    value={formData.email}
+                    onChange={handleChange}
                     className="pl-9"
                   />
                 </div>
